@@ -1,7 +1,7 @@
 # RNA angles prediction using DSSR
 
 
-This code is a wrapper code that uses DSSR[1][2][3][4] to get the torsion and pseudo-torsion angles from RNA data.
+This code is a wrapper code that uses [[DSSR]](#1-4) to get the torsion and pseudo-torsion angles from RNA data.
 
 
 
