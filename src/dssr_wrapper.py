@@ -13,16 +13,13 @@ from src.utils import save_json
 class DSSRWrapper:
     def __init__(
         self,
-        tmp_dir: str = "tmp",
         dssr_analyse_bin_path: str = os.path.join("dssr", "bin", "analyze"),
         *args,
         **kwargs,
     ):
         """
-        :param tmp_dir: path to the temporary directory
         :param dssr_analyse_bin_path: path to the dssr analyse binary file
         """
-        self.tmp_dir = tmp_dir
         self.dssr_analyse_bin_path = dssr_analyse_bin_path
 
     def _convert_path_to_list_pdb_files(self, input_path: str) -> List:
@@ -159,9 +156,6 @@ class DSSRWrapper:
         )
         parser.add_argument(
             "--output_path", type=str, help="path to save the output in .json or .csv"
-        )
-        parser.add_argument(
-            "--tmp_dir", type=str, default="tmp", help="path to the temporary directory"
         )
         parser.add_argument(
             "--dssr_analyse_bin_path",
