@@ -1,0 +1,481 @@
+<analyze>
+NAME
+        analyze - calculate nucleic acid structural parameters
+SYNOPSIS
+        analyze [OPTION] FILE ...
+DESCRIPTION
+        calculate various nucleic acid structural parameters (propeller,
+        slide, roll, twist, backbone torsions etc.) from FILE, and
+        generate input to other 3DNA programs. As of v2.1, with the
+        -torsion option, it also provides detailed pseudo-torsions, Zp
+        for single-stranded DNA/RNA structures, and classification of
+        backbone BI/BII and base syn/anti-conformation
+        --abi   calculation of the A/B-index to follow A/B transitions
+        -c      output structural parameters between helical regions
+                ("----" by default). The same effect can be achieved by
+                directly modifying the input file (change "9" or "1" to
+                "0" in the third column of each base pair list.)
+        -t      detailed (pseudo) torsions, BI/BII, syn/anti- and Zp
+        -h      this help message (any non-recognized options will do)
+INPUT
+        given a PDB file "sample.pdb", the input to analyze can be most
+        conveniently generated with the 'find_pair' program:
+            find_pair sample.pdb sample.inp
+EXAMPLES
+        analyze sample.inp
+        analyze sample1.inp sample2.inp sample3.inp
+        find_pair sample.pdb | analyze
+        find_pair sample.pdb | analyze -c
+        analyze -t=6tna.tor 6tna.pdb
+OUTPUT
+        sample.out, auxiliary.par, bp_step.par, bp_helical.par,
+        cf_7methods.par, ref_frames.dat, poc_haxis.r3d, stacking.pdb
+        hstacking.pdb
+SEE ALSO
+        find_pair, rebuild, frame_mol, ex_str, stack2img
+</analyze>
+
+<find_pair>
+NAME
+        find_pair - locate base-pairs and helical regions
+SYNOPSIS
+        find_pair [OPTION] PDBFILE OUTFILE
+DESCRIPTION
+        locate base-pairs and helical regions given a PDB data file. Its
+        output can be directly fed into 'analyze' and Curves+.
+        -s, -1  treat the whole structure as a continuous single helix.
+                Useful for getting all backbone torsion angles
+        -c      get Curves input for a duplex
+        -c+     get input for Curves+ (duplex, ATOM records only)
+        -d      generate a separate output file for each helical region
+        -p      find all base-pairs and higher-order base associations
+        -a      read in only the ATOM records, ignoring HETATM records
+        -z      more detailed base-pairing information in the output
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB data file
+        One-letter options can be in either case, any order, or combined
+EXAMPLES
+        find_pair sample.pdb sample.inp
+        find_pair -p sample.pdb allbp_list
+        find_pair -c+ sample.pdb sample_c+.inp
+                  [then run: Cur+ < sample_c+.inp]
+OUTPUT
+        base-pair listing for input to analyze and Curves bestpairs.pdb,
+        hel_regions.pdb, col_chains.scr, col_helices.scr, allpairs.pdb,
+        multiplets.pdb, mulbp.inp
+SEE ALSO
+        analyze, ex_str, stack2img
+</find_pair>
+
+<rotate_mol>
+NAME
+        rotate_mol - reorient a structure in PDB or ALCHEMY format
+SYNOPSIS
+        rotate_mol [OPTION] INPFILE OUTFILE
+DESCRIPTION
+        change the orientation of a structure data file in PDB or ALCHEMY
+        and write the result in a new file. The new orientation can be from
+        RasMol, a user-defined rotation matrix or be based on the principle
+        moment of inertia.
+        -c      move the structure to its geometric center
+        -a      set structure with regard to the principle moment of inertia
+                  based on ALL atoms
+        -b      same as -a, but based on only BASE atoms
+                  default is based on all nucleotide atoms
+        -p      same as -a, but based on only PROTEIN atoms
+        -t=TRNSMAT  data file containing transformation matrix (rotmat.dat)
+        -r=ROTFILE  file of rotation angles as from RasMol (to molscript)
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB or ALCHEMY data file
+EXAMPLES
+        Use RasMol to load a structure and rotate it to get your preferred
+        view, then issue "write molscript my_view.scr" in command window.
+        rotate_mol -c -r=my_view.scr sample.pdb sample_view.pdb
+        rotate_mol -b sample.pdb sample_bpmi.pdb
+        rotate_mol -t=rotmat.dat sample.pdb sample_rmat.pdb
+OUTPUT
+        output structure file in new view
+        pmiview1, pmiview2, pmiview3, rotmat.dat
+SEE ALSO
+        r3d_atom, blocview, frame_mol
+</rotate_mol>
+
+<frame_mol>
+NAME
+        frame_mol - reorient a structure based on a reference frame
+SYNOPSIS
+        frame_mol [OPTION] -n1[,n2] REFFILE [INPFILE] OUTFILE
+DESCRIPTION
+        change the orientation of a structure data file in PDB or ALCHEMY
+        format and write the result into a new file. The new orientation
+        is based on base or base-pair reference frame generated from
+        'analyze' or 'rebuild'. Useful for setting relevant structures in
+        the same view for comparison.
+        -n1[,n2] base-pair serial number(s) [no spaces around the comma]
+        -m      set the structure's minor-groove side towards the viewer
+        -r      align a structure to (not in) a specific reference frame
+        -x      use middle helical frame in setting the structure
+        -a      attach local helix axes to the ALCHEMY file
+        -g      add global reference frame to the ALCHEMY file
+        -l=LEN  length of reference frame axes in angstrom (3.5)
+        -s      get the block representation of a duplex structure
+        -f      generate PDB/ALCHEMY file with reference frames attached
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB or ALCHEMY data file
+        Reference frame file (ref_frames.dat)
+EXAMPLES
+        To set the Dickerson-Drew dodecamer CGCGAATTCGCG duplex structure
+        (355d.pdb) with its minor groove at the middle A6-T7 step facing
+        the viewer:
+            find_pair 355d.pdb | analyze
+            cp ref_frames.dat 355d_frames.dat
+            frame_mol -m -6,7 355d_frames.dat 355d.pdb 355d_new.pdb
+        and to rebuild a model with coordinates in the original frame:
+            rebuild -atomic bp_step.par 355d_f1.pdb
+            frame_mol -1 -r 355d_frames.dat 355d_f1.pdb 355d_raw.pdb
+        Check examples/calladine_drew/ subdirectory for more examples
+OUTPUT
+        output structure file in new view
+SEE ALSO
+        analyze, rebuild, rotate_mol
+</frame_mol>
+
+<std_base>
+NAME
+        std_base - reset a base residue in standard orientation
+SYNOPSIS
+        std_base [OPTION] [ANGLE1 DISTANCE ANGLE2] PDBFILE OUTFILE
+DESCRIPTION
+        reset a base residue to a "standard" orientation (in its frame)
+        to be used with 3DNA. Useful if one would like to try other base
+        geometry than that provided with 3DNA.
+        -a      Adenine
+        -c      Cytosine
+        -g      Guanine
+        -t      Thymine
+        -u      Uracil
+        -fit    ls-fit the base to a standard one
+        ANGLE1    C1'--RN9/YN1--Origin in degrees
+        DISTANCE  RN9/YN1--Origin in angstrom
+        ANGLE2    RN9/YN1--Origin--X-Axis in degrees
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB file with a SINGLE base residue
+EXAMPLES
+        # A.pdb contains an adenine as extracted from a PDB file
+        std_base A.pdb A-std.pdb
+OUTPUT
+        PDB file in standard orientation
+SEE ALSO
+        analyze, rebuild, find_pair
+</std_base>
+
+<pdb2img>
+NAME
+        pdb2img - generate a block representation image from a PDB file
+SYNOPSIS
+        pdb2img [OPTION] [-s=factor] PDBFILE OUTFILE
+DESCRIPTION
+        generate a block representation of base or peptide bond in PS, XFIG,
+        or Raster3D format. The six faces of each block can also be shown in
+        different styles, resulting in much more revealing presentation than
+        an atomic model. With Raster3D input, these blocks can be combined
+        with other schematic representations (e.g., from MolScript).
+        -f      generate an XFIG file
+        -r      generate an input to 'render' of Raster3D, or PyMOL
+        -n      without header for Raster3D (with -r)
+        -c      color image
+        -i      identical style for the six faces of each block
+        -u      up-down faces instead of minor/major groove faces
+        -m      minor groove plus identical five other sides
+        -s=factor  set scale factor (to put image in the same scale)
+        -b      draw a boundary frame around the image
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB file
+        One-letter options can be in either case, any order, and combined
+EXAMPLES
+        pdb2img -bcu sample.pdb sample.eps
+        pdb2img -fc sample.pdb sample.fig
+        pdb2img -rc sample.pdb | render -jpeg > sample.jpg
+        pdb2img -rci sample.pdb sample.r3d  # can also be viewed in PyMOL
+OUTPUT
+        PS, XFIG, or Raster3D input file
+        bblk_lkg.alc, pblk_lkg.alc
+SEE ALSO
+        r3d_atom, alc2img, stack2img, blocview
+</pdb2img>
+
+<alc2img>
+NAME
+        alc2img - generate a block representation image from an ALCHEMY file
+SYNOPSIS
+        alc2img [OPTION] [-s=factor] ALCFILE OUTFILE
+DESCRIPTION
+        generate a block representation image in PS, XFIG, or Raster3D format
+        from an ALCHEMY file.
+        -f      generate an XFIG file
+        -r      generate an input to 'render' of Raster3D, or PyMOL
+        -n      without header for Raster3D (with -r)
+        -c      color image
+        -i      identical style for the 6 faces of each block
+        -s=factor  set scale factor (to put image in the same scale)
+        -l      link consecutive base-pair origins
+        -a      attach local helix axes (from 'frame_mol')
+        -g      show global reference frame (from 'frame_mol')
+        -b      draw a boundary frame around the image
+        -mol    convert ALCHEMY to MDL molfile format
+        -pdb    convert ALCHEMY to PDB format
+        -h      this help message (any non-recognized options will do)
+INPUT
+        ALCHEMY file
+        One-letter options can be in either case, any order, and combined
+EXAMPLES
+        To build the Calladine-Draw image illustrating curvature introduced
+        by different roll distributions (p78a in examples/calladine_drew/):
+           rebuild p78a.dat temp.alc
+           frame_mol -m -11,12 ref_frames.dat temp.alc temp2.alc
+           echo "by rotation y 90" | rotate_mol -r=stdin temp2.alc temp.alc
+           alc2img -l temp.alc p78a.eps
+           alc2img -mol temp.alc temp.mol
+           alc2img -pdb temp.alc temp.pdb
+OUTPUT
+        PS, XFIG, or Raster3D input file
+SEE ALSO
+        rebuild, frame_mol, pdb2img, rotate_mol, r3d_atom, blocview
+</alc2img>
+
+<stack2img>
+NAME
+        stack2img - generate a stacking diagram from a PDB file
+SYNOPSIS
+        stack2img [OPTION] [-s=factor] PDBFILE OUTFILE
+DESCRIPTION
+        generate a stacking diagram image in PS, XFIG, or Raster3D format
+        from a PDB file, with H-bonds, filled based ring, and labeling.
+        -f      generate an XFIG file
+        -r      generate an input to 'render' of Raster3D, or PyMOL
+        -d      draw H-bonds between base residues
+        -o      fill base rings
+        -l      label base residue at the center of its six-membered ring
+        -s=factor  set scale factor (to put image in the same scale)
+        -c      color image
+        -m      minor-groove side view of the structure
+        -t      normal top view of the structure
+        -b      draw a boundary frame around the image
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB file
+        One-letter options can be in either case, any order, and combined
+EXAMPLES
+        To get the stacking diagram of C3-G4 step in the Dickerson-Drew
+        dodecamer CGCGAATTCGCG duplex structure (355d.pdb):
+                  find_pair 355d.pdb | analyze
+                  ex_str -3 stacking.pdb C3_G4.pdb
+                  stack2img -cdolt C3_G4.pdb C3_G4.eps
+OUTPUT
+        PS, XFIG, or Raster3D input file
+        hbonds_info.dat, atom_lkg.alc
+SEE ALSO
+        analyze, r3d_atom, ex_str
+</stack2img>
+
+<rebuild>
+NAME
+        rebuild - generate a customized structure in PDB or ALCHEMY format
+SYNOPSIS
+        rebuild [OPTION] PARFILE OUTFILE
+DESCRIPTION
+        generate a nucleic acid structure based on structural parameters in a
+        data file. The output can be full-atomic model in PDB format with or
+        without backbone atoms, or in block representation in ALCHEMY format.
+        -atomic    full atomic model in PDB format
+        -cif       output structure coordinates in mmCIF format (with -atomic)
+        -block1    one block per base-pair/base in ALCHEMY format (default)
+        -block2    two blocks per base-pair in ALCHEMY format
+        -h         this help message (any non-recognized options will do)
+EXAMPLES
+        To rebuild the Dickerson-Drew dodecamer CGCGAATTCGCG duplex (355d)
+        with standard B-DNA backbone conformation:
+             find_pair 355d.pdb | analyze
+             x3dna_utils cp_std BDNA
+             rebuild -atomic bp_step.par 355d_3dna.pdb
+        Check examples/calladine_drew/ subdirectory for more examples
+OUTPUT
+        Structure in PDB, mmCIF, or ALCHEMY format
+        ref_frames.dat
+SEE ALSO
+        analyze, frame_mol, rotate_mol, alc2img, x3dna_utils
+</rebuild>
+
+<fiber>
+NAME
+        fiber - generate 56 fiber models based on Arnott and other's work
+SYNOPSIS
+        fiber [OPTION] PDBFILE
+DESCRIPTION
+        generate 56 fiber models based on the repeating unit from Arnott's
+        work, including the canonical A-, B-, C- and Z-DNA, triplex, etc.
+        -cif     output structure coordinates in mmCIF format
+        -num     a structure identification number in the range (1-56)
+        -m, -l   brief description of the 56 fiber structures
+        -a, -1   A-DNA model (calf thymus)
+        -b, -4   B-DNA (calf thymus, default)
+        -c, -47  C-DNA (BII-type nucleotides)
+        -d, -48  D(A)-DNA  poly d(AT) : poly d(AT) (right-handed)
+        -z, -15  Z-DNA poly d(GC) : poly d(GC)
+        -pauling triplex RNA model, based on Pauling and Corey
+        -rna     RNA duplex with arbitrary base sequence
+        -seq=string specifying an arbitrary base sequence
+        -rep=number no. of repeats of the sequence specified via -seq
+        -single  output a single-stranded structure
+        -h       this help message (any non-recognized options will do)
+INPUT
+        An structure identification number (or symbol)
+EXAMPLES
+        fiber fiber-BDNA.pdb
+            # fiber -4 fiber-BDNA.pdb
+            # fiber -b fiber-BDNA.pdb
+        fiber -a fiber-ADNA.pdb
+        fiber -seq=AAAGGUUU -rna fiber-RNA.pdb
+        fiber -seq=AAAGGUUU -rna -single fiber-ssRNA.pdb
+        fiber -seq=AATTG -rep=5 B-AATTG-repeat5.pdb
+            # triplex model (RNA), based on Pauling and Corey
+        fiber -pauling triplex-C10C10C10.pdb  # default: 10 Cs per strand
+        fiber -pauling -seq=AAA triplex-A3A3A3.pdb  # 3 As per strand
+        fiber -pauling -seq=AAAA:CCCC:GGGG Pauling-triplex-A4C4G4.pdb
+            # triplex DNA model, with O2' atoms removed
+        fiber -pauling-dna -seq=ACTT -repeat=6 Pauling-DNA-triplex.pdb
+OUTPUT
+        PDB file
+SEE ALSO
+        analyze, find_pair
+</fiber>
+
+<r3d_atom>
+NAME
+        r3d_atom - generate input of atomic model to 'render' of Raster3D
+SYNOPSIS
+        r3d_atom [OPTION] PDBFILE OUTFILE
+DESCRIPTION
+        generate input of atomic model to 'render' of Raster3D, or PyMOL,
+        with H-bonds, filled based ring, and labeling etc. The output can
+        be combined with scenes generated from other Raster3D programs.
+        -n      without header for Raster3D
+        -d      draw H-bonds between base residues
+        -o      fill base rings
+        -l      label base residue at the center of its six-membered ring
+        -c      colored by base residue
+        -g      gray image
+        -s=factor     set scale factor (to put image in the same scale)
+        -r=cylinder_radius       in angstrom
+        -b=ball_radius           as percent of vdw radius
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB data file
+        One-letter options can be in either case, any order, and combined
+EXAMPLES
+        r3d_atom -co sample.pdb | render -jpeg > sample.jpg
+OUTPUT
+        Input file to 'render' of Raster3D, or PyMOL
+        atom_lkg.alc, hbonds_info.dat
+SEE ALSO
+        stack2img, pdb2img, alc2img, blocview
+</r3d_atom>
+
+<comb_str>
+NAME
+        comb_str - combine two PDB or ALCHEMY files
+SYNOPSIS
+        comb_str FILE1 FILE2 OUTFILE
+DESCRIPTION
+        combine two structure files in PDB or ALCHEMY format into one
+        -h         this help message (any non-recognized options will do)
+INPUT
+        Two PDB or ALCHEMY files
+EXAMPLES
+        To get an ALCHEMY file with block representation embedded into
+        atomic model:
+                r3d_atom sample.pdb temp1
+                pdb2img sample.pdb temp2
+                comb_str atom_lkg.alc bblk_lkg.alc sample.alc
+                rasmol -alchemy -noconnect sample.alc
+        A Perl script, block_atom, automates this process
+OUTPUT
+        PDB or ALCHEMY file
+SEE ALSO
+        r3d_atom, stack2img, pdb2img, alc2img, block_atom
+</comb_str>
+
+<get_part>
+NAME
+        get_part - extract base, amino-acid, or other components in PDB
+SYNOPSIS
+        get_part [OPTION] PDBFILE OUTFILE
+DESCRIPTION
+        extract the different structural components, i.e., base, amino-acids
+        and other, from a PDB file. Useful for handling each part separately.
+        -n      nucleic acid (default)
+        -l      only backbone atoms of nucleic acid
+        -b      only base atoms of nucleic acid
+        -x      nucleic backbone (without OP1/OP2) and base ring atoms
+        -z      P and base ring atoms
+        -p      protein
+        -t      ligand (HETATM records)
+        -w      delete WATER (H2O)
+        -d      delete hydrogen atoms
+        -h      this help message (any non-recognized options will do)
+INPUT
+        PDB file
+        One-letter options can be in either case, any order, and combined
+EXAMPLES
+        get_part -n sample.pdb sample_dna.pdb
+OUTPUT
+        PDB file containing only specified components
+SEE ALSO
+        blocview, r3d_atom, find_pair, analyze
+</get_part>
+
+<ex_str>
+NAME
+        ex_str - extract a model from an NMR or multiple-structure PDB file
+SYNOPSIS
+        ex_str [OPTION] PDBFILE OUTFILE
+DESCRIPTION
+        extract a structure model from an NMR or multiple-structure PDB file
+        -num    structure # in a multiple-structure PDB file (1 by default)
+        -nmr    NMR ensemble PDB file
+        -nmrb   Best representative conformer in the NMR ensemble
+        -biou   Biological unit
+        -delh   Delete hydrogen atoms
+        -h      this help message (any non-recognized options will do)
+INPUT
+        NMR or multiple-structure PDB file
+EXAMPLES
+        To extract the 6th step in the Dickerson-Drew dodecamer CGCGAATTCGCG
+        duplex structure (355d.pdb):
+               find_pair 355d.pdb | analyze
+               ex_str -6 stacking.pdb A6T7.pdb
+OUTPUT
+        PDB file containing only the specified model
+SEE ALSO
+        find_pair, analyze
+</ex_str>
+
+<contact_info>
+					 Homepage: http://x3dna.org/
+					Forum: http://forum.x3dna.org/
+
+  CITATION: Xiang-Jun Lu & Wilma K. Olson (2003). ``3DNA: a software
+	  package for the analysis, rebuilding and visualization of
+			 three-dimensional nucleic acid structures.''
+			  Nucleic Acids Research, 31(17), 5108-5121.
+
+  and/or: Xiang-Jun Lu & Wilma K. Olson (2008). ``3DNA: a versatile,
+			 integrated software system for the analysis,
+		  rebuilding and visualization of three-dimensional
+	nucleic-acid structures.''  Nature Protocols 3(7), 1213-1227.
+</contact_info>

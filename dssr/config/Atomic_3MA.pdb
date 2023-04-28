@@ -1,0 +1,13 @@
+REMARK 3DNA v3 (2018), created and maintained by xiangjun@x3dna.org
+HETATM    1  N9  3MA A 600      -1.287   4.521   0.006  1.00 49.87           N  
+HETATM    2  C4  3MA A 600      -1.262   3.133   0.004  1.00 50.46           C  
+HETATM    3  N3  3MA A 600      -2.337   2.286  -0.009  1.00 50.37           N  
+HETATM    4  CN3 3MA A 600      -3.743   2.648  -0.047  1.00 50.41           C  
+HETATM    5  C2  3MA A 600      -1.905   1.013   0.001  1.00 50.11           C  
+HETATM    6  N1  3MA A 600      -0.662   0.520   0.004  1.00 49.27           N  
+HETATM    7  C6  3MA A 600       0.366   1.372  -0.003  1.00 48.99           C  
+HETATM    8  N6  3MA A 600       1.588   0.867  -0.034  1.00 46.12           N  
+HETATM    9  C5  3MA A 600       0.068   2.768   0.003  1.00 49.89           C  
+HETATM   10  N7  3MA A 600       0.875   3.914  -0.003  1.00 49.84           N  
+HETATM   11  C8  3MA A 600       0.026   4.909  -0.003  1.00 49.58           C  
+END
