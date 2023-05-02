@@ -27,7 +27,9 @@ class DSSRWrapper:
         """
         Setup the X3DNA variable to execute the DSSR code
         """
-        os.environ['X3DNA'] = os.path.dirname(os.path.dirname(self.dssr_analyse_bin_path ))
+        base_name = os.path.dirname(os.path.dirname(self.dssr_analyse_bin_path))
+        os.environ['X3DNA'] = os.path.join(os.getcwd(), base_name)
+        os.environ['PATH'] = f"{os.environ['X3DNA']}/bin:{os.environ['PATH']}"
 
     def _convert_path_to_list_pdb_files(self, input_path: str) -> List:
         """
