@@ -138,6 +138,8 @@ class DSSRWrapper:
         df_pseudo_torsion = self.get_angles_from_dssr_one_file(file_, is_pseudo=True)
         df_pseudo_torsion.drop(columns=["rank", "base"], inplace=True)
         df = pd.concat((df_torsion, df_pseudo_torsion), axis=1)
+        # Add the sequence
+        df["sequence"] = df["base"].apply(lambda x: x[-1])
         if to_csv:
             return df
         return self._convert_pd_to_dict(df)
