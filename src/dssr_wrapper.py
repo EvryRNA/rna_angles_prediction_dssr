@@ -21,6 +21,13 @@ class DSSRWrapper:
         :param dssr_analyse_bin_path: path to the dssr analyse binary file
         """
         self.dssr_analyse_bin_path = dssr_analyse_bin_path
+        self.setup_env_variables()
+
+    def setup_env_variables(self):
+        """
+        Setup the X3DNA variable to execute the DSSR code
+        """
+        os.environ['X3DNA'] = os.path.dirname(os.path.dirname(self.dssr_analyse_bin_path ))
 
     def _convert_path_to_list_pdb_files(self, input_path: str) -> List:
         """
