@@ -7,7 +7,7 @@ import subprocess
 from typing import Dict, List, Optional, Union
 import pandas as pd
 
-from src.utils import save_json
+from helper.rna_angles_prediction_dssr.src.utils import save_json
 
 
 class DSSRWrapper:
