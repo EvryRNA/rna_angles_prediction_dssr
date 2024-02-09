@@ -156,6 +156,10 @@ class DSSRWrapper:
         command = f"{self.dssr_analyse_bin_path} {c_arg} {file_}"
         output = subprocess.check_output(command, shell=True)
         input_string = [line.split(",") for line in output.decode().split("\n")][:-1]
+        # Add None values for alpha and beta for the first angle
+        if not is_pseudo:
+            first_element = input_string[1][:4] + ["NA"] + input_string[1][4:]
+            input_string[1] = first_element
         df = pd.DataFrame(input_string[1:], columns=input_string[0])
         return df
 
